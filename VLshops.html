@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VL Shops — Household Shopping</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F3EEDD;
+    --card:#FFFDF6;
+    --ink:#262420;
+    --ink-soft:#6b6558;
+    --board:#DB7A32;
+    --board-deep:#B85E20;
+    --board-line:#C1691F;
+    --mustard:#D9A62E;
+    --mustard-ink:#5c4413;
+    --sage:#6E8F74;
+    --sage-ink:#233a28;
+    --rust:#B5533C;
+    --line:#DCD4B8;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(38,36,32,0.06) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+  button{font-family:inherit;cursor:pointer;}
+  input{font-family:inherit;}
+
+  /* ---------- Name entry screen ---------- */
+  #nameScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .join-card{
+    background:var(--card);
+    border-radius:20px;
+    padding:40px 32px;
+    width:100%;
+    max-width:380px;
+    box-shadow:0 1px 0 rgba(38,36,32,0.05), 0 20px 40px -20px rgba(38,36,32,0.25);
+    text-align:center;
+    border:1px solid var(--line);
+  }
+  .join-pumpkin{width:52px;height:52px;margin:0 auto 14px;display:block;}
+  .join-card .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--sage-ink);
+    background:rgba(110,143,116,0.15);
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:999px;
+    margin-bottom:18px;
+  }
+  .join-card h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:28px;
+    margin:0 0 8px;
+    letter-spacing:-0.01em;
+  }
+  .join-card p{
+    color:var(--ink-soft);
+    font-size:14px;
+    margin:0 0 28px;
+    line-height:1.5;
+  }
+  .badge-preview{
+    width:64px;height:64px;border-radius:50%;
+    margin:0 auto 20px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;font-size:22px;color:#fff;
+    background:var(--ink-soft);
+    transition:background 0.15s ease;
+  }
+  #nameInput{
+    width:100%;
+    padding:13px 14px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    font-size:15px;
+    background:var(--paper);
+    color:var(--ink);
+    margin-bottom:14px;
+    outline:none;
+  }
+  #nameInput:focus{border-color:var(--sage);}
+  #joinBtn{
+    width:100%;
+    padding:13px 14px;
+    border-radius:10px;
+    border:none;
+    background:var(--board);
+    color:var(--paper);
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:0.01em;
+  }
+  #joinBtn:disabled{opacity:0.4;cursor:not-allowed;}
+  #joinBtn:not(:disabled):hover{background:var(--board-deep);}
+
+  /* ---------- App shell ---------- */
+  #app{display:none;min-height:100vh;flex-direction:column;}
+  header.board{
+    background:var(--board);
+    color:var(--paper);
+    padding:18px 20px 0;
+    position:sticky;top:0;z-index:5;
+    box-shadow:0 8px 24px -12px rgba(0,0,0,0.35);
+  }
+  .board-top{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .board-top .brand{
+    display:flex;align-items:center;gap:9px;
+  }
+  .pumpkin-logo{width:30px;height:30px;flex-shrink:0;display:block;}
+  .board-top h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:20px;
+    letter-spacing:0.02em;
+    text-transform:uppercase;
+    margin:0;
+  }
+  .board-top h1 span{color:#FFE8B0;}
+  .refresh-btn{
+    background:rgba(255,255,255,0.2);
+    border:none;
+    width:34px;height:34px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--paper);
+    margin-right:8px;
+    transition:transform 0.4s ease, background 0.15s ease;
+  }
+  .refresh-btn:hover{background:rgba(255,255,255,0.3);}
+  .refresh-btn.spinning svg{animation:spin 0.7s linear;}
+  .refresh-btn svg{width:16px;height:16px;}
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .header-right{display:flex;align-items:center;}
+  .me{
+    display:flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--paper);
+    background:rgba(255,255,255,0.2);
+    padding:6px 10px 6px 6px;
+    border-radius:999px;
+    border:none;
+  }
+  .me:hover{background:rgba(255,255,255,0.3);}
+  .mini-badge{
+    width:24px;height:24px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:10px;color:#fff;
+    flex-shrink:0;
+  }
+  .tabs{display:flex;gap:4px;}
+  .tab{
+    flex:1;
+    background:rgba(255,255,255,0.06);
+    border:none;
+    color:rgba(243,238,221,0.65);
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    padding:11px 8px;
+    border-radius:10px 10px 0 0;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .tab.active{
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .tab .count{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    background:rgba(38,36,32,0.08);
+    padding:1px 7px;
+    border-radius:999px;
+  }
+  .tab:not(.active) .count{
+    background:rgba(255,255,255,0.12);
+    color:rgba(243,238,221,0.8);
+  }
+
+  /* ---------- List area ---------- */
+  main{
+    flex:1;
+    max-width:640px;
+    width:100%;
+    margin:0 auto;
+    padding:0 16px 140px;
+  }
+  .ticket{
+    background:var(--card);
+    margin-top:14px;
+    border-radius:0 0 var(--radius) var(--radius);
+    box-shadow:0 1px 0 rgba(38,36,32,0.04), 0 16px 32px -20px rgba(38,36,32,0.25);
+    overflow:hidden;
+  }
+  .torn-edge{
+    height:10px;
+    background:
+      linear-gradient(-45deg, var(--card) 6px, transparent 0),
+      linear-gradient(45deg, var(--card) 6px, transparent 0);
+    background-size:12px 12px;
+    background-position:left top;
+    background-repeat:repeat-x;
+    background-color:transparent;
+  }
+  .empty-state{
+    padding:52px 24px;
+    text-align:center;
+    color:var(--ink-soft);
+  }
+  .empty-state .glyph{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:32px;
+    margin-bottom:10px;
+    color:var(--line);
+  }
+  .empty-state p{margin:0;font-size:14px;line-height:1.6;}
+
+  .item-row{
+    display:flex;
+    gap:12px;
+    padding:14px 18px;
+    border-bottom:1px dashed var(--line);
+    align-items:flex-start;
+  }
+  .item-row:last-child{border-bottom:none;}
+
+  .check{
+    width:26px;height:26px;
+    border-radius:50%;
+    border:2px solid var(--mustard);
+    flex-shrink:0;
+    margin-top:2px;
+    background:transparent;
+    display:flex;align-items:center;justify-content:center;
+    transition:all 0.15s ease;
+  }
+  .check svg{opacity:0;transition:opacity 0.15s ease;width:13px;height:13px;}
+  .item-row.done .check{
+    background:var(--sage);
+    border-color:var(--sage);
+  }
+  .item-row.done .check svg{opacity:1;}
+
+  .item-body{flex:1;min-width:0;}
+  .item-name{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:15.5px;
+    font-weight:500;
+    color:var(--ink);
+    word-break:break-word;
+  }
+  .item-row.done .item-name{
+    color:var(--ink-soft);
+    text-decoration:line-through;
+    text-decoration-color:var(--sage);
+    text-decoration-thickness:1.5px;
+  }
+  .meta-line{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top:6px;
+    flex-wrap:wrap;
+  }
+  .who{
+    display:flex;align-items:center;gap:5px;
+  }
+  .init{
+    width:19px;height:19px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;
+    font-size:8.5px;color:#fff;position:relative;flex-shrink:0;
+  }
+  .init.role-added{box-shadow:0 0 0 2px var(--mustard);}
+  .init.role-picked{box-shadow:0 0 0 2px var(--sage);}
+  .meta-text{
+    font-family:'Inter',sans-serif;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+  .meta-divider{color:var(--line);font-size:11px;}
+
+  /* ---------- Add bar ---------- */
+  .add-bar{
+    position:fixed;
+    bottom:0;left:0;right:0;
+    background:var(--card);
+    border-top:1px solid var(--line);
+    padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+    box-shadow:0 -12px 30px -18px rgba(38,36,32,0.3);
+  }
+  .add-bar-inner{
+    max-width:640px;margin:0 auto;
+    display:flex;gap:10px;
+  }
+  #itemInput{
+    flex:1;
+    padding:13px 14px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    background:var(--paper);
+    font-size:15px;
+    outline:none;
+  }
+  #itemInput:focus{border-color:var(--mustard);}
+  #addBtn{
+    padding:0 20px;
+    border-radius:10px;
+    border:none;
+    background:var(--board);
+    color:var(--paper);
+    font-weight:600;
+    font-size:20px;
+    line-height:1;
+  }
+  #addBtn:hover{background:var(--board-deep);}
+  #addBtn:disabled{opacity:0.4;cursor:not-allowed;}
+
+  .status-banner{
+    max-width:640px;margin:14px auto 0;padding:0 16px;
+  }
+  .status-banner .box{
+    background:#fbeee9;
+    border:1px solid var(--rust);
+    color:#7a3222;
+    font-size:12.5px;
+    padding:10px 14px;
+    border-radius:10px;
+    font-family:'IBM Plex Mono',monospace;
+    line-height:1.5;
+  }
+  .sync-dot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--mustard);
+    display:inline-block;
+    margin-left:6px;
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:0.35;}
+    50%{opacity:1;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .sync-dot{animation:none;}
+  }
+
+  @media (max-width:420px){
+    .board-top h1{font-size:17px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ Name entry screen ============ -->
+<div id="nameScreen">
+  <div class="join-card">
+    <svg class="join-pumpkin" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <path d="M32 10c-1 0-1.5 3-1.5 6.5" stroke="#4E7A3C" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <path d="M32 10c3.5-4 7.5-4.5 9-3" stroke="#4E7A3C" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <ellipse cx="32" cy="38" rx="23" ry="19" fill="#E2853F"/>
+      <path d="M15 22c-4 6-4 24 0 32" stroke="#B85E20" stroke-width="2.5" fill="none" opacity="0.55"/>
+      <path d="M32 19c-3 8-3 30 0 38" stroke="#B85E20" stroke-width="2.5" fill="none" opacity="0.55"/>
+      <path d="M49 22c4 6 4 24 0 32" stroke="#B85E20" stroke-width="2.5" fill="none" opacity="0.55"/>
+      <ellipse cx="23" cy="34" rx="4" ry="5.5" fill="#3A2A1E"/>
+      <ellipse cx="41" cy="34" rx="4" ry="5.5" fill="#3A2A1E"/>
+      <ellipse cx="24.3" cy="32" rx="1.3" ry="1.7" fill="#fff"/>
+      <ellipse cx="42.3" cy="32" rx="1.3" ry="1.7" fill="#fff"/>
+      <path d="M20 47c3 4 21 4 24 0c-3 6-21 6-24 0Z" fill="#3A2A1E"/>
+      <path d="M25 46l2 3M31 47l0 3.5M37 46l-2 3" stroke="#E2853F" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    <span class="eyebrow">VL Shops</span>
+    <div class="badge-preview" id="badgePreview">?</div>
+    <h1>Who's shopping?</h1>
+    <p>Enter your name so the household knows who added or picked up each item. You'll only need to do this once on this device.</p>
+    <input id="nameInput" type="text" placeholder="e.g. Keshav" maxlength="30" autocomplete="off" />
+    <button id="joinBtn" disabled>Join the list</button>
+  </div>
+</div>
+
+<!-- ============ Main app ============ -->
+<div id="app">
+  <header class="board">
+    <div class="board-top">
+      <div class="brand">
+        <svg class="pumpkin-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <path d="M32 10c-1 0-1.5 3-1.5 6.5" stroke="#4E7A3C" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M32 10c3.5-4 7.5-4.5 9-3" stroke="#4E7A3C" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <ellipse cx="32" cy="38" rx="23" ry="19" fill="#FFC978"/>
+          <path d="M15 22c-4 6-4 24 0 32" stroke="#D9722E" stroke-width="2.5" fill="none" opacity="0.55"/>
+          <path d="M32 19c-3 8-3 30 0 38" stroke="#D9722E" stroke-width="2.5" fill="none" opacity="0.55"/>
+          <path d="M49 22c4 6 4 24 0 32" stroke="#D9722E" stroke-width="2.5" fill="none" opacity="0.55"/>
+          <ellipse cx="23" cy="34" rx="4" ry="5.5" fill="#3A2A1E"/>
+          <ellipse cx="41" cy="34" rx="4" ry="5.5" fill="#3A2A1E"/>
+          <ellipse cx="24.3" cy="32" rx="1.3" ry="1.7" fill="#fff"/>
+          <ellipse cx="42.3" cy="32" rx="1.3" ry="1.7" fill="#fff"/>
+          <path d="M20 47c3 4 21 4 24 0c-3 6-21 6-24 0Z" fill="#3A2A1E"/>
+          <path d="M25 46l2 3M31 47l0 3.5M37 46l-2 3" stroke="#FFC978" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <h1>VL <span>Shops</span></h1>
+      </div>
+      <div class="header-right">
+        <button class="refresh-btn" id="refreshBtn" title="Check for updates">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        </button>
+        <button class="me" id="meBtn" title="Switch user">
+          <span class="mini-badge" id="meBadge"></span>
+          <span id="meName"></span>
+        </button>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="tabActive" data-tab="active">
+        Shopping list <span class="count" id="countActive">0</span>
+      </button>
+      <button class="tab" id="tabDone" data-tab="done">
+        Order history <span class="count" id="countDone">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <div class="status-banner" id="statusBanner" style="display:none;">
+      <div class="box" id="statusBox"></div>
+    </div>
+    <div class="ticket">
+      <div class="torn-edge"></div>
+      <div id="listContainer"></div>
+    </div>
+  </main>
+
+  <div class="add-bar" id="addBar">
+    <div class="add-bar-inner">
+      <input id="itemInput" type="text" placeholder="Add something to the list…" maxlength="80" autocomplete="off" />
+      <button id="addBtn">+</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ======================================================================
+  // CONFIGURATION
+  // Paste the Web App URL you get from deploying the attached AppsScript.gs
+  // (see SETUP.md). Everything breaks gracefully with a banner until this
+  // is set.
+  // ======================================================================
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjGOu9VYRgkTlxFkKX_4Ef80Bp5VeCowkjjSieeTSMXDhHHv2a94TLvzB4T7Q6tUu03Q/exec";
+  const STORAGE_KEY = "vlShopsUser";
+
+  // ---------------------------------------------------------------------
+  // State
+  // ---------------------------------------------------------------------
+  // currentUser is remembered on this device via localStorage, so each
+  // person only types their name once. (localStorage only fails inside
+  // Claude.ai's own artifact preview — once this file is hosted on its own
+  // page, as SETUP.md walks through, it works normally and the name sticks.)
+  let currentUser = null;          // { name, initials, color }
+  let items = [];                  // authoritative list from the sheet
+  let activeTab = "active";
+
+  const PALETTE = ["#C9622D","#3E6E5E","#8A4F7D","#2E6E8E","#B08B1E","#6B4E9B","#4E7A3C","#B5533C"];
+
+  function hashColor(name){
+    let h = 0;
+    for (let i=0;i<name.length;i++){ h = (h*31 + name.charCodeAt(i)) >>> 0; }
+    return PALETTE[h % PALETTE.length];
+  }
+  function initialsOf(name){
+    const trimmed = (name||"").trim();
+    if (!trimmed) return "??";
+    return trimmed.slice(0,2).toUpperCase();
+  }
+  function fmtDateTime(iso){
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    const now = new Date();
+    const sameYear = d.getFullYear() === now.getFullYear();
+    const datePart = d.toLocaleDateString(undefined, sameYear ? {month:"short", day:"numeric"} : {month:"short", day:"numeric", year:"numeric"});
+    const timePart = d.toLocaleTimeString(undefined, {hour:"numeric", minute:"2-digit"});
+    return datePart + ", " + timePart;
+  }
+
+  function getSavedName(){
+    try { return localStorage.getItem(STORAGE_KEY) || ""; } catch(e){ return ""; }
+  }
+  function saveName(name){
+    try { localStorage.setItem(STORAGE_KEY, name); } catch(e){ /* storage unavailable — will just re-ask next visit */ }
+  }
+  function clearSavedName(){
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+  }
+
+  // ---------------------------------------------------------------------
+  // Name entry screen
+  // ---------------------------------------------------------------------
+  const nameScreen = document.getElementById("nameScreen");
+  const appEl = document.getElementById("app");
+  const nameInput = document.getElementById("nameInput");
+  const joinBtn = document.getElementById("joinBtn");
+  const badgePreview = document.getElementById("badgePreview");
+
+  nameInput.addEventListener("input", () => {
+    const v = nameInput.value.trim();
+    joinBtn.disabled = v.length === 0;
+    if (v){
+      badgePreview.textContent = initialsOf(v);
+      badgePreview.style.background = hashColor(v);
+    } else {
+      badgePreview.textContent = "?";
+      badgePreview.style.background = "";
+    }
+  });
+  nameInput.addEventListener("keydown", (e) => { if (e.key === "Enter" && !joinBtn.disabled) joinBtn.click(); });
+  joinBtn.addEventListener("click", () => {
+    const v = nameInput.value.trim();
+    if (!v) return;
+    setCurrentUser(v);
+  });
+
+  function setCurrentUser(name, opts){
+    opts = opts || {};
+    currentUser = { name: name, initials: initialsOf(name), color: hashColor(name) };
+    if (opts.persist !== false) saveName(name);
+    document.getElementById("meName").textContent = currentUser.name;
+    const meBadge = document.getElementById("meBadge");
+    meBadge.textContent = currentUser.initials;
+    meBadge.style.background = currentUser.color;
+    nameScreen.style.display = "none";
+    appEl.style.display = "flex";
+    // Fetch the current list once when the app is opened. No background
+    // polling after this — the list updates again only when you take an
+    // action, hit the refresh button, or come back to this tab.
+    syncFromServer(false);
+  }
+
+  document.getElementById("meBtn").addEventListener("click", () => {
+    if (!confirm("Switch to a different name on this device?")) return;
+    clearSavedName();
+    currentUser = null;
+    appEl.style.display = "none";
+    nameScreen.style.display = "flex";
+    nameInput.value = "";
+    joinBtn.disabled = true;
+    badgePreview.textContent = "?";
+    badgePreview.style.background = "";
+    nameInput.focus();
+  });
+
+  document.getElementById("refreshBtn").addEventListener("click", (e) => {
+    const btn = e.currentTarget;
+    btn.classList.add("spinning");
+    syncFromServer(false).finally(() => {
+      setTimeout(() => btn.classList.remove("spinning"), 400);
+    });
+  });
+
+  // Gentle, non-spammy re-check: pull the latest list when the person comes
+  // back to this tab (e.g. switches apps and returns) — not on a timer.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && currentUser) {
+      syncFromServer(true);
+    }
+  });
+
+  // ---------------------------------------------------------------------
+  // Tabs
+  // ---------------------------------------------------------------------
+  document.getElementById("tabActive").addEventListener("click", () => switchTab("active"));
+  document.getElementById("tabDone").addEventListener("click", () => switchTab("done"));
+  function switchTab(tab){
+    activeTab = tab;
+    document.getElementById("tabActive").classList.toggle("active", tab === "active");
+    document.getElementById("tabDone").classList.toggle("active", tab === "done");
+    document.getElementById("addBar").style.display = tab === "active" ? "block" : "none";
+    render();
+  }
+
+  // ---------------------------------------------------------------------
+  // Networking
+  // ---------------------------------------------------------------------
+  function configured(){
+    return APPS_SCRIPT_URL && APPS_SCRIPT_URL.indexOf("PASTE_YOUR") === -1;
+  }
+  function showStatus(msg, isError){
+    const banner = document.getElementById("statusBanner");
+    const box = document.getElementById("statusBox");
+    if (!msg){ banner.style.display = "none"; return; }
+    banner.style.display = "block";
+    box.innerHTML = msg + (isError === false ? '<span class="sync-dot"></span>' : "");
+  }
+
+  // silent=true suppresses the "reconnected" success flash (used for the
+  // quiet come-back-to-the-tab check); silent=false is used for the
+  // deliberate moments: opening the app and pressing the refresh button.
+  async function syncFromServer(silent){
+    if (!configured()){
+      showStatus("Backend not connected yet. Open index.html, set <b>APPS_SCRIPT_URL</b> at the top of the script, and reload. See SETUP.md for the 5-minute walkthrough.", true);
+      return;
+    }
+    try{
+      const res = await fetch(APPS_SCRIPT_URL, { method: "GET" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      items = data.items || [];
+      render();
+      showStatus(null);
+    } catch(err){
+      showStatus("Couldn't reach the shared list (" + err.message + "). Tap the refresh icon to try again.", true);
+    }
+  }
+
+  async function sendAction(payload){
+    if (!configured()) return;
+    try{
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      items = data.items || [];
+      render();
+      showStatus(null);
+    } catch(err){
+      showStatus("That change didn't save — check your connection, then tap refresh.", true);
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Mutations (optimistic)
+  // ---------------------------------------------------------------------
+  document.getElementById("addBtn").addEventListener("click", addItem);
+  document.getElementById("itemInput").addEventListener("keydown", (e) => { if (e.key === "Enter") addItem(); });
+
+  function addItem(){
+    const input = document.getElementById("itemInput");
+    const name = input.value.trim();
+    if (!name || !currentUser) return;
+    input.value = "";
+
+    const tempId = "tmp-" + Date.now();
+    items.push({
+      id: tempId, name: name, addedBy: currentUser.name,
+      addedAt: new Date().toISOString(), status: "active",
+      orderedBy: "", orderedAt: ""
+    });
+    render();
+    sendAction({ action: "add", name: name, addedBy: currentUser.name });
+  }
+
+  function toggleItem(id, makeDone){
+    const it = items.find(i => i.id === id);
+    if (!it) return;
+    it.status = makeDone ? "ordered" : "active";
+    if (makeDone){
+      it.orderedBy = currentUser.name;
+      it.orderedAt = new Date().toISOString();
+    } else {
+      it.orderedBy = "";
+      it.orderedAt = "";
+    }
+    render();
+    sendAction({
+      action: "toggle", id: id, actor: currentUser.name,
+      newStatus: makeDone ? "ordered" : "active"
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------
+  function badgeHTML(name, role){
+    const cls = role === "picked" ? "role-picked" : "role-added";
+    return '<span class="init ' + cls + '" style="background:' + hashColor(name) + '" title="' + escapeHtml(name) + '">' + initialsOf(name) + '</span>';
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  function render(){
+    const listEl = document.getElementById("listContainer");
+    const activeItems = items.filter(i => i.status !== "ordered").sort((a,b) => new Date(b.addedAt) - new Date(a.addedAt));
+    const doneItems = items.filter(i => i.status === "ordered").sort((a,b) => new Date(b.orderedAt) - new Date(a.orderedAt));
+
+    document.getElementById("countActive").textContent = activeItems.length;
+    document.getElementById("countDone").textContent = doneItems.length;
+
+    const list = activeTab === "active" ? activeItems : doneItems;
+
+    if (list.length === 0){
+      listEl.innerHTML =
+        '<div class="empty-state">' +
+          '<div class="glyph">' + (activeTab === "active" ? "○" : "✓") + '</div>' +
+          '<p>' + (activeTab === "active"
+            ? "The list is empty. Add the first thing the household needs."
+            : "Nothing picked up yet. Checked-off items land here.") +
+          '</p>' +
+        '</div>';
+      return;
+    }
+
+    listEl.innerHTML = list.map(renderRow).join("");
+
+    list.forEach(it => {
+      const row = document.getElementById("row-" + it.id);
+      if (!row) return;
+      row.querySelector(".check").addEventListener("click", () => {
+        toggleItem(it.id, it.status !== "ordered");
+      });
+    });
+  }
+
+  function renderRow(it){
+    const done = it.status === "ordered";
+    let meta = '<div class="meta-line">' +
+        '<div class="who">' + badgeHTML(it.addedBy, "added") + '<span class="meta-text">Added ' + fmtDateTime(it.addedAt) + '</span></div>' +
+      '</div>';
+    if (done){
+      meta += '<div class="meta-line">' +
+          '<div class="who">' + badgeHTML(it.orderedBy, "picked") + '<span class="meta-text">Picked up ' + fmtDateTime(it.orderedAt) + '</span></div>' +
+        '</div>';
+    }
+    return (
+      '<div class="item-row' + (done ? ' done' : '') + '" id="row-' + it.id + '">' +
+        '<button class="check" aria-label="' + (done ? "Move back to shopping list" : "Mark as picked up") + '">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' +
+        '</button>' +
+        '<div class="item-body">' +
+          '<div class="item-name">' + escapeHtml(it.name) + '</div>' +
+          meta +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  // ---------------------------------------------------------------------
+  // Boot: if this device already has a saved name, go straight into the
+  // app — otherwise show the name screen.
+  // ---------------------------------------------------------------------
+  const savedName = getSavedName();
+  if (savedName){
+    setCurrentUser(savedName, { persist: false });
+  }
+
+})();
+</script>
+</body>
+</html>
